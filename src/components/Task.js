@@ -7,7 +7,8 @@ import utils from "../utils";
 import moment from "moment";
 import "moment/locale/pt-br"
 
-export default function Tesk({ desc, estimateAt, doneAt, toggletask, id}){
+
+export default function Task({ desc, estimateAt, doneAt, toggleTask, id}){
     const date = doneAt ? moment(estimateAt).locale('pt-br') : estimateAt
     const formattedDate = moment(date).locale('pt-br').format('ddd, D [de] MMMM')
 
@@ -23,10 +24,11 @@ export default function Tesk({ desc, estimateAt, doneAt, toggletask, id}){
         }
     }
 
+    
     return (
         <View style={styles.container}>
 
-            <TouchableWithoutFeedback onPress={() => toggletask(id)}>
+            <TouchableWithoutFeedback onPress={() => toggleTask(id)}>
                 <View style={styles.checkConatiner}>
                     {getCheckView(doneAt)}
                 </View>

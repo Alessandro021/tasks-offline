@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { View, Text, StyleSheet, ImageBackground, FlatList } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, StyleSheet, ImageBackground, FlatList, StatusBar, TouchableOpacity, Platform } from "react-native";
 import moment from "moment/moment";
 import "moment/locale/pt-br"
+import {FontAwesome} from "@expo/vector-icons"
 
 import Task from "../components/Task";
 
@@ -16,7 +17,19 @@ export default function TaskList(){
         { id: Math.random(), desc: "Ler livro", estimateAt: new Date(), doneAt: null},
     ])
 
-    function toggletask(taskId){
+    const [showDoneTasks, setShowDoneTasks] = useState(true)
+    const [visibleTasks, setVisibleTasks] = useState([])
+
+    useEffect(() => {
+        filterTasks()
+    },[])
+
+    function toggleFilter(){
+        setShowDoneTasks(!showDoneTasks)
+        filterTasks()
+    }
+    
+    function toggleTask(taskId){
         const newTasks = [...tasks]
         newTasks.forEach(task => {
             if(task.id === taskId){
@@ -25,11 +38,34 @@ export default function TaskList(){
         });
 
         setTasks(newTasks)
+        filterTasks()
+    }
+
+    function filterTasks(){
+        let newVisibleTask = null
+
+        if(showDoneTasks){
+            newVisibleTask = [...tasks]
+        } else {
+            newVisibleTask = tasks.filter(task => {
+                return task.doneAt === null
+            })
+        }
+
+        setVisibleTasks(newVisibleTask)
     }
 
     return(
         <View style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="#6A0809"/>
+
             <ImageBackground style={styles.background} source={todayImage}>
+                <View style={styles.iconBar}>
+                    <TouchableOpacity onPress={toggleFilter}>
+                        <FontAwesome name={showDoneTasks ? "eye" : "eye-slash"} size={25} color={utils.colors.secundario} />
+                    </TouchableOpacity>
+                </View>
+
                 <View style={styles.titleBar}>
                     <Text style={styles.title}>Hoje</Text>
                     <Text style={styles.subTitle}>{today}</Text>
@@ -38,9 +74,9 @@ export default function TaskList(){
 
             <View style={styles.taskList}>
             <FlatList 
-                    data={tasks}
+                    data={visibleTasks}
                     keyExtractor={item => String(item.id)}
-                    renderItem={({item}) => <Task {...item} toggletask={toggletask}/>}
+                    renderItem={({item}) => <Task {...item} toggleTask={toggleTask}/>}
                 />
             </View>
         </View>
@@ -79,5 +115,11 @@ const styles = StyleSheet.create({
         fontSize: 20,
         marginLeft: 20,
         marginBottom: 30,
-    }
+    },
+     iconBar: {
+        flexDirection: "row", 
+        marginHorizontal: 20,
+        justifyContent: "flex-end",
+        marginTop: Platform.OS === "ios" ? 40 : 10,
+   }
 })
