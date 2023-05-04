@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ImageBackground, FlatList, StatusBar, TouchableOpacity, Platform } from "react-native";
+import { View, Text, StyleSheet, ImageBackground, FlatList, StatusBar, TouchableOpacity, Platform} from "react-native";
 import moment from "moment/moment";
 import "moment/locale/pt-br"
 import {FontAwesome} from "@expo/vector-icons"
@@ -8,6 +8,7 @@ import Task from "../components/Task";
 
 import todayImage from '../../assets/imgs/today.jpg'
 import utils from "../utils";
+import AddTask from "./AddTask";
 
 export default function TaskList(){
     const today = moment().locale('pt-br').format('ddd, D [de] MMMM')
@@ -19,10 +20,11 @@ export default function TaskList(){
 
     const [showDoneTasks, setShowDoneTasks] = useState(true)
     const [visibleTasks, setVisibleTasks] = useState([])
+    const [showAddTask, setShowAddTask] = useState(false)
 
     useEffect(() => {
         filterTasks()
-    },[])
+    },[tasks])
 
     function toggleFilter(){
         setShowDoneTasks(!showDoneTasks)
@@ -55,9 +57,15 @@ export default function TaskList(){
         setVisibleTasks(newVisibleTask)
     }
 
+    function addTask(desc, date){
+        setTasks(oldArray => [...oldArray, {id: Math.random(), desc: desc, estimateAt: date, doneAt: null}])
+    }
+
     return(
         <View style={styles.container}>
         <StatusBar barStyle="light-content" backgroundColor="#6A0809"/>
+
+            <AddTask isVisible={showAddTask} onCancel={() => setShowAddTask(false)} onSave={addTask}/>
 
             <ImageBackground style={styles.background} source={todayImage}>
                 <View style={styles.iconBar}>
@@ -79,9 +87,13 @@ export default function TaskList(){
                     renderItem={({item}) => <Task {...item} toggleTask={toggleTask}/>}
                 />
             </View>
+            <TouchableOpacity style={styles.addButton} activeOpacity={0.7} onPress={() => setShowAddTask(!showAddTask)}>
+                <FontAwesome name="plus" size={22} color={utils.colors.secundario} />
+            </TouchableOpacity>
         </View>
     )
 }
+
 
 const styles = StyleSheet.create({
     container: {
@@ -121,5 +133,16 @@ const styles = StyleSheet.create({
         marginHorizontal: 20,
         justifyContent: "flex-end",
         marginTop: Platform.OS === "ios" ? 40 : 10,
+   },
+   addButton:{
+    position: "absolute",
+    right: 30,
+    bottom: 50,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: utils.colors.today,
+    alignItems: "center",
+    justifyContent: "center",
    }
 })

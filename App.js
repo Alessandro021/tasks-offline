@@ -2,7 +2,7 @@ import 'react-native-gesture-handler';
 import { useCallback } from 'react';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-import TaskList from './src/pages/Tasklist';
+import TaskList from "./src/pages/TaskList"
 
 import { StyleSheet, Text, View, StatusBar } from 'react-native';
 
