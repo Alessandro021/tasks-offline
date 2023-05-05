@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ImageBackground, FlatList, StatusBar, Touchable
 import moment from "moment/moment";
 import "moment/locale/pt-br"
 import {FontAwesome} from "@expo/vector-icons"
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import Task from "../components/Task";
 
@@ -13,18 +14,24 @@ import AddTask from "./AddTask";
 export default function TaskList(){
     const today = moment().locale('pt-br').format('ddd, D [de] MMMM')
 
-    const [ tasks, setTasks] = useState([
-        { id: Math.random(), desc: "Comprar livro", estimateAt: new Date(), doneAt: new Date()},
-        { id: Math.random(), desc: "Ler livro", estimateAt: new Date(), doneAt: null},
-    ])
+    const [ tasks, setTasks] = useState([])
+    const [visibleTasks, setVisibleTasks] = useState([])
 
     const [showDoneTasks, setShowDoneTasks] = useState(true)
-    const [visibleTasks, setVisibleTasks] = useState([])
     const [showAddTask, setShowAddTask] = useState(false)
 
-    useEffect(() => {
+    useEffect( () => {
+
+        async function carrega(){
+        const stateString = await AsyncStorage.getItem("@TASKS")
+        const taskState = JSON.parse(stateString) || []
+        setTasks(taskState)
         filterTasks()
-    },[tasks])
+        }
+
+        carrega()
+        
+    },[])
 
     function toggleFilter(){
         setShowDoneTasks(!showDoneTasks)
@@ -55,10 +62,20 @@ export default function TaskList(){
         }
 
         setVisibleTasks(newVisibleTask)
+        AsyncStorage.setItem("@TASKS", JSON.stringify(tasks))
     }
 
     function addTask(desc, date){
         setTasks(oldArray => [...oldArray, {id: Math.random(), desc: desc, estimateAt: date, doneAt: null}])
+        filterTasks()
+    }
+
+    function deleteTask(id){
+        const newTasks = tasks.filter(task => {
+            return task.id !== id
+        })
+        filterTasks()
+        setTasks(newTasks)
     }
 
     return(
@@ -84,7 +101,7 @@ export default function TaskList(){
             <FlatList 
                     data={visibleTasks}
                     keyExtractor={item => String(item.id)}
-                    renderItem={({item}) => <Task {...item} toggleTask={toggleTask}/>}
+                    renderItem={({item}) => <Task onDelete={deleteTask} {...item} toggleTask={toggleTask}/>}
                 />
             </View>
             <TouchableOpacity style={styles.addButton} activeOpacity={0.7} onPress={() => setShowAddTask(!showAddTask)}>
