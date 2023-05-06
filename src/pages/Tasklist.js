@@ -14,7 +14,7 @@ import AddTask from "./AddTask";
 export default function TaskList(){
     const today = moment().locale('pt-br').format('ddd, D [de] MMMM')
 
-    const [ tasks, setTasks] = useState([])
+    const [tasks, setTasks] = useState([])
     const [visibleTasks, setVisibleTasks] = useState([])
 
     const [showDoneTasks, setShowDoneTasks] = useState(true)
@@ -28,13 +28,15 @@ export default function TaskList(){
         setTasks(taskState)
         filterTasks()
         }
-
         carrega()
-        
     },[])
 
+    function saveStorage(tasks){
+        AsyncStorage.setItem("@TASKS", JSON.stringify(tasks))
+    }
+
     function toggleFilter(){
-        setShowDoneTasks(!showDoneTasks)
+        setShowDoneTasks(showDoneTasks ? false : true)
         filterTasks()
     }
     
@@ -45,49 +47,43 @@ export default function TaskList(){
                 task.doneAt = task.doneAt ? null : new Date()
             }
         });
-
+        
         setTasks(newTasks)
-        filterTasks()
+        saveStorage(newTasks)
     }
 
     function filterTasks(){
-        let newVisibleTask = null
-
-        if(showDoneTasks){
-            newVisibleTask = [...tasks]
-        } else {
-            newVisibleTask = tasks.filter(task => {
-                return task.doneAt === null
-            })
-        }
-
+        let newVisibleTask = tasks.filter(task => {
+            return task.doneAt !== null
+        })
         setVisibleTasks(newVisibleTask)
-        AsyncStorage.setItem("@TASKS", JSON.stringify(tasks))
     }
 
-    function addTask(desc, date){
-        setTasks(oldArray => [...oldArray, {id: Math.random(), desc: desc, estimateAt: date, doneAt: null}])
-        filterTasks()
+    async function addTask(desc, date){
+        const newTask = [...tasks, {id: Math.random(), desc: desc, estimateAt: date, doneAt: null}]
+        setTasks(newTask)
+        AsyncStorage.setItem("@TASKS", JSON.stringify(newTask)) 
     }
 
     function deleteTask(id){
         const newTasks = tasks.filter(task => {
             return task.id !== id
         })
-        filterTasks()
         setTasks(newTasks)
+        saveStorage(newTasks)
+
     }
 
     return(
         <View style={styles.container}>
         <StatusBar barStyle="light-content" backgroundColor="#6A0809"/>
 
-            <AddTask isVisible={showAddTask} onCancel={() => setShowAddTask(false)} onSave={addTask}/>
+          <AddTask isVisible={showAddTask} onCancel={() => setShowAddTask(false)} onSave={addTask} showDoneTasks/>
 
             <ImageBackground style={styles.background} source={todayImage}>
                 <View style={styles.iconBar}>
                     <TouchableOpacity onPress={toggleFilter}>
-                        <FontAwesome name={showDoneTasks ? "eye" : "eye-slash"} size={25} color={utils.colors.secundario} />
+                        <FontAwesome name={!showDoneTasks ? "eye" : "eye-slash"} size={25} color={utils.colors.secundario} />
                     </TouchableOpacity>
                 </View>
 
@@ -99,9 +95,9 @@ export default function TaskList(){
 
             <View style={styles.taskList}>
             <FlatList 
-                    data={visibleTasks}
+                    data={showDoneTasks ? tasks : visibleTasks}
                     keyExtractor={item => String(item.id)}
-                    renderItem={({item}) => <Task onDelete={deleteTask} {...item} toggleTask={toggleTask}/>}
+                    renderItem={({item}) => <Task onDelete={deleteTask} {...item} toggleTask={toggleTask} />}
                 />
             </View>
             <TouchableOpacity style={styles.addButton} activeOpacity={0.7} onPress={() => setShowAddTask(!showAddTask)}>

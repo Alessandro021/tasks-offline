@@ -44,23 +44,23 @@ export default function Task({ desc, estimateAt, doneAt, toggleTask, id, onDelet
 
     
     return (
-        <GestureHandlerRootView>
-        <Swipeable renderRightActions={getRightContent} renderLeftActions={getLeftContent} onSwipeableLeftOpen={() => onDelete(id)}>
-        <View style={styles.container}>
-            <TouchableWithoutFeedback onPress={() => toggleTask(id)}>
-                <View style={styles.checkConatiner}>
-                    {getCheckView(doneAt)}
-                </View>
-            </TouchableWithoutFeedback>
-            
-            <View>
-                <Text style={[styles.desc, doneAt != null? { textDecorationLine: "line-through" } :  {} ]}>{desc}</Text>
-                <Text style={styles.date}>{formattedDate}</Text>
-            </View>
-        </View>
-        </Swipeable>
-        </GestureHandlerRootView>
-    )
+            <GestureHandlerRootView>
+                <Swipeable renderRightActions={getRightContent} renderLeftActions={getLeftContent} onSwipeableLeftOpen={() => onDelete(id)}>
+                    <View style={styles.container}>
+                        <TouchableWithoutFeedback onPress={() => toggleTask(id)}>
+                            <View style={styles.checkConatiner}>
+                                {getCheckView(doneAt)}
+                            </View>
+                        </TouchableWithoutFeedback>
+
+                        <View>
+                            <Text style={[styles.desc, doneAt != null ? { textDecorationLine: "line-through" } : {}]}>{desc}</Text>
+                            <Text style={styles.date}>{formattedDate}</Text>
+                        </View>
+                    </View>
+                </Swipeable>
+            </GestureHandlerRootView>
+        )
 }
 
 const styles = StyleSheet.create({
